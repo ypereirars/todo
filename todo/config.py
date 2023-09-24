@@ -1,4 +1,4 @@
-""""Contains code to handle the application’s configuration file"""
+""""Contains code to handle the application's configuration file"""
 
 import configparser
 from pathlib import Path
@@ -15,7 +15,7 @@ def init_app(db_path: str) -> ReturnCode:
     """Initialize the application."""
     config_code = _init_config_file()
 
-    if config_code != ReturnCode.SUCESS:
+    if config_code != ReturnCode.SUCCESS:
         return config_code
 
     database_code = _create_database(db_path)

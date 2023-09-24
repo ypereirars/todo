@@ -5,7 +5,7 @@ __version__ = "0.1.0"
 
 
 class ReturnCode(Enum):
-    SUCESS = 0
+    SUCCESS = 0
     DIR_ERROR = 1
     FILE_ERROR = 2
     DB_READ_ERROR = 3
