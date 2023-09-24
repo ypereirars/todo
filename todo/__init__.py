@@ -12,3 +12,12 @@ class ReturnCode(Enum):
     DB_WRITE_ERROR = 4
     JSON_ERROR = 5
     ID_ERROR = 6
+
+
+ERRORS = {
+    ReturnCode.DIR_ERROR: "config directory error",
+    ReturnCode.FILE_ERROR: "config file error",
+    ReturnCode.DB_READ_ERROR: "database read error",
+    ReturnCode.DB_WRITE_ERROR: "database write error",
+    ReturnCode.ID_ERROR: "to-do id error",
+}
