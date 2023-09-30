@@ -142,6 +142,19 @@ def list_all(
     #     raise Exit(1)
 
 
+@app.command()
+def complete(todo_id: str = Argument(..., help="ID of the to-do item to complete")) -> None:
+    """Mark a to-do item as completed"""
+    controller = get_todoer()
+
+    model = controller.complete(todo_id)
+    if model.error == ReturnCode.SUCCESS:
+        secho(f'to-do "{model.todo.title}" was marked as completed', fg=colors.GREEN)
+    else:
+        secho(f'Completing to-do item failed with "{ERRORS[model.error]}"', fg=colors.RED)
+        raise Exit(1)
+
+
 def _version_callback(value: bool) -> None:
     """Print the version of the application"""
     if value:

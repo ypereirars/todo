@@ -86,3 +86,22 @@ class TodoController:
         todo_list = [todo for todo in todo_list if todo["priority"] == priority] if priority is not None else todo_list
 
         return [Todo(**todo) for todo in todo_list]
+
+    def complete(self, todo_id: str) -> TodoModel:
+        read = self._db_handler.read_todos()
+
+        if read.error == ReturnCode.DB_READ_ERROR:
+            return TodoModel(None, read.error)
+
+        found = False
+        for todo in read.todo_list:
+            if str(todo["id"]).startswith(todo_id) and len(todo_id) > 5:
+                todo["completed"] = True
+                found = True
+                break
+
+        if found:
+            write = self._db_handler.write_todos(read.todo_list)
+            return TodoModel(Todo(**todo), write.error)
+        else:
+            return TodoModel(Todo(**todo), ReturnCode.ID_ERROR)
