@@ -74,6 +74,18 @@ class TodoController:
 
         return TodoModel(todo, write.error)
 
+    def get(self, todo_id):
+        read = self._db_handler.read_todos()
+
+        if read.error == ReturnCode.DB_READ_ERROR:
+            return TodoModel(None, read.error)
+
+        for todo in read.todo_list:
+            if str(todo["id"]).startswith(todo_id) and len(todo_id) > 5:
+                return TodoModel(Todo(**todo), ReturnCode.SUCCESS)
+
+        return TodoModel(None, ReturnCode.ID_ERROR)
+
     def list(self, completed: Optional[bool] = None, priority: Optional[int] = None) -> List[Todo]:
         read = self._db_handler.read_todos()
 
@@ -105,3 +117,47 @@ class TodoController:
             return TodoModel(Todo(**todo), write.error)
         else:
             return TodoModel(Todo(**todo), ReturnCode.ID_ERROR)
+
+    def remove_completed(self) -> TodoModel:
+        read = self._db_handler.read_todos()
+
+        if read.error == ReturnCode.DB_READ_ERROR:
+            return TodoModel(None, read.error)
+
+        todo_list = [todo for todo in read.todo_list if not todo["completed"]]
+
+        write = self._db_handler.write_todos(todo_list)
+
+        return TodoModel(None, write.error)
+
+    def remove(self, todo_id: str, completed: Optional[bool] = None) -> TodoModel:
+        read = self._db_handler.read_todos()
+
+        if read.error == ReturnCode.DB_READ_ERROR:
+            return TodoModel(None, read.error)
+
+        found = False
+        for todo in read.todo_list:
+            if str(todo["id"]).startswith(todo_id) and len(todo_id) > 5:
+                read.todo_list.remove(todo)
+                found = True
+                if completed is None:
+                    break
+
+        if found:
+            write = self._db_handler.write_todos(read.todo_list)
+            return TodoModel(Todo(**todo), write.error)
+        else:
+            return TodoModel(None, ReturnCode.ID_ERROR)
+
+    def remove_all(self) -> TodoModel:
+        read = self._db_handler.read_todos()
+
+        if read.error == ReturnCode.DB_READ_ERROR:
+            return TodoModel(None, read.error)
+
+        todo_list = []
+
+        write = self._db_handler.write_todos(todo_list)
+
+        return TodoModel(None, write.error)
