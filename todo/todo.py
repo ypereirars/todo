@@ -20,7 +20,7 @@ class Todo:
         title: str,
         description: str = "",
         priority: TodoPriority = TodoPriority.Low,
-        completed: bool = False
+        completed: bool = False,
     ) -> None:
         self.id = id
         self.title = title
@@ -35,3 +35,11 @@ class Todo:
 class TodoModel(NamedTuple):
     todo: Todo
     error: int
+
+
+class TodoController:
+    def __init__(self, db_path: str) -> None:
+        self._db_handler = DatabaseHandler(db_path)
+
+    def add(self, title: str, description: str = "", priority: TodoPriority = TodoPriority.Low) -> Todo:
+        return None
