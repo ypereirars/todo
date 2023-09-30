@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import List, Optional
 
-from typer import Argument, Exit, Option, Typer, colors, echo, secho
+from typer import Argument, Exit, Option, Typer, colors, confirm, echo, secho
 
 from todo import ERRORS, ReturnCode, __app_name__, __version__, config, database
 from todo.todo import TodoController
@@ -153,6 +153,76 @@ def complete(todo_id: str = Argument(..., help="ID of the to-do item to complete
     else:
         secho(f'Completing to-do item failed with "{ERRORS[model.error]}"', fg=colors.RED)
         raise Exit(1)
+
+
+@app.command()
+def remove(
+    todo_id: Optional[str] = Option(None, "--id", help="ID of the to-do item to remove"),
+    completed: Optional[bool] = Option(
+        None,
+        "--completed",
+        "-c",
+        flag_value=True,
+        help="Remove all completed to-do items",
+    ),
+    remove_all: Optional[bool] = Option(
+        False,
+        "--all",
+        "-a",
+        flag_value=True,
+        help="Remove all to-do items",
+    ),
+    force: Optional[bool] = Option(
+        False,
+        "--force",
+        "-f",
+        help="Force the removal of a to-do item without confirmation",
+    ),
+) -> None:
+    """Remove a to-do item from the database"""
+    if remove_all:
+        pass
+    elif todo_id is None and completed is None:
+        secho("You must provide either a to-do item ID or the --completed flag", fg=colors.RED)
+        raise Exit(1)
+    elif todo_id is not None and completed is not None:
+        secho("You can't provide both a to-do item ID and the --completed flag", fg=colors.RED)
+        raise Exit(1)
+
+    controller = get_todoer()
+
+    def _remove(todo_id, completed):
+        if completed:
+            model = controller.remove_completed()
+            msg = f"all completed to-do items were removed"
+        elif remove_all:
+            model = controller.remove_all()
+            msg = f"all to-do items were removed"
+        else:
+            model = controller.remove(todo_id)
+            todo = model.todo.title if model.todo else ""
+            msg = f'to-do "{todo}" was removed'
+
+        if model.error == ReturnCode.SUCCESS:
+            secho(msg, fg=colors.GREEN)
+        else:
+            secho(f'Removing to-do item failed with "{ERRORS[model.error]}"', fg=colors.RED)
+            raise Exit(1)
+
+    if force:
+        _remove(todo_id, completed)
+    else:
+        if completed:
+            delete = confirm("Delete all completed to-do items?")
+        elif remove_all:
+            secho(f"DANGER! All to-do will be removed", fg=colors.RED)
+            delete = confirm("Do you still want to proceed?")
+        else:
+            model = controller.get(todo_id)
+            delete = confirm(f"Delete to-do # {todo_id}: {model.todo.title}?")
+
+        if delete:
+            _remove(todo_id, completed)
 
 
 def _version_callback(value: bool) -> None:
