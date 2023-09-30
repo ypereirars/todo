@@ -3,10 +3,9 @@
 import configparser
 import json
 from pathlib import Path
-from typing import List, NamedTuple
+from typing import Any, List, NamedTuple
 
 from todo import ReturnCode
-from todo.todo import Todo
 
 DEFAULT_DB_FILE_PATH = Path.home().joinpath(
     "." + Path.home().stem + "_todo.json"
@@ -16,7 +15,7 @@ DEFAULT_DB_FILE_PATH = Path.home().joinpath(
 class DBResponse(NamedTuple):
     """Represents the response from the database."""
 
-    todo_list: List[Todo]
+    todo_list: List[Any]
     error: ReturnCode
 
 
@@ -34,7 +33,7 @@ class DatabaseHandler:
         except OSError:  # Catch file IO problems
             return DBResponse([], ReturnCode.DB_READ_ERROR)
 
-    def write_todos(self, todo_list: List[Todo]) -> DBResponse:
+    def write_todos(self, todo_list: List[Any]) -> DBResponse:
         try:
             with self._db_path.open("w") as db:
                 json.dump(todo_list, db, indent=4)
